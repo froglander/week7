@@ -13,50 +13,51 @@ var trainDatabase = firebase.database();
 
 
 // At the initial load, get a snapshot of the current data.
-// trainDatabase.ref().on("value", function(snapshot) {
+trainDatabase.ref().on("child_added", function(childSnapshot) {
+	console.log(childSnapshot.val());
 
-// 	// Print the initial data to the console.
-// 	console.log(snapshot.val());
+	var $trainBody = $('#trainRows');
 
-// 	// Change the html to reflect the initial value.
-// 	//$("#clickValue").html(snapshot.val().clicks);
+	var $trainRow = $('<tr>');
 
-// 	// Change the clickcounter to match the data in the database
-// 	//clickCounter = snapshot.val().clicks;
+	var $trainName = $('<td>').html(childSnapshot.val().trainName).appendTo($trainRow);
+	var $destination = $('<td>').html(childSnapshot.val().destination).appendTo($trainRow);
+	var $frequency = $('<td>').html(childSnapshot.val().frequency).appendTo($trainRow);
+	var $nextArrival = $('<td>').html(childSnapshot.val().firstTrainTime).appendTo($trainRow);
+	var $minutesAway = $('<td>').html(childSnapshot.val().frequency).appendTo($trainRow);
 
-// 	// Log the value of the clickCounter
-// 	// console.log(clickCounter);
+		
+	$trainRow.appendTo($trainBody);
 
-// 	// Change the HTML Value
-// 	// $('#clickValue').html(clickCounter);
-
-// // If any errors are experienced, log them to console. 
-// }, function (errorObject) {
-
-//   	console.log("The read failed: " + errorObject.code);
-
-// });
+	// If any errors are experienced, log them to console. 
+	}, function (errorObject) {
+	  	console.log("The read failed: " + errorObject.code);
+});
 
 // Whenever a user clicks the click button
-$("#submitNewTrain").on("click", function() {
-	console.log("Submit new train click");
-	var trainName = $('#trainNameInput').val().trim();
-	var destination = $('#destinationInput').val().trim();
-	var firstTrainTime = $('#firstTrainTimeInput').val().trim();
-	var frequency = $('#frequencyInput').val().trim();
+$("#submitNewTrain").on("click", function() {	
+	console.log("trainName:", $('#trainNameInput').val().trim());
+	console.log("destination:", $('#destinationInput').val().trim());
+	console.log("firstTrainTime:", $('#firstTrainTimeInput').val().trim());
+	console.log("frequency:", $('#frequencyInput').val().trim());
 
-	// Log the value of clickCounter
-	console.log("trainName:", trainName);
-	console.log("destination:", destination);
-	console.log("firstTrainTime:", firstTrainTime);
-	console.log("frequency:", frequency);
+	var trainObj = {
+		trainName: $('#trainNameInput').val().trim(),
+		destination: $('#destinationInput').val().trim(),
+		firstTrainTime: $('#firstTrainTimeInput').val().trim(),
+		frequency: $('#frequencyInput').val().trim()
+	}
+	trainDatabase.ref().push(trainObj);
 
-	// Save new value to Firebase
-	trainDatabase.ref().set({
-		trainName: trainName,
-		destination: destination,
-		firstTrainTime: firstTrainTime,
-		frequency: frequency
-	});
 	return false;
 });
+
+
+// // When first loaded or when the connections list changes...
+// trainDatabase.on("value", function(snap) {
+
+//   // Display the viewer count in the html.
+//   // The number of online users is the number of children in the connections list.
+//   $("#watchers").html(snap.numChildren());
+
+// });
