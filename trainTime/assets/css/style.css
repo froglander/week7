@@ -1,0 +1,10 @@
+.trainHeader {
+	background-image: url("../images/background.jpg");
+	background-repeat:  no-repeat;
+	background-size: 1140px 455px;
+	background-position: center bottom;
+	height: 300px;
+}
+.trainHeader h1 {
+	font-size: 70px;
+}
