@@ -23,7 +23,7 @@ var trainDatabase = firebase.database();
 /*				 and display it on the page						*/
 /* ************************************************************	*/
 trainDatabase.ref().on("child_added", function(childSnapshot) {
-	// console.log(childSnapshot.val());
+	console.log(childSnapshot.val());
 
 	// Build up variables useful for calculation how many minutes away
 	// the next train is	
@@ -37,18 +37,18 @@ trainDatabase.ref().on("child_added", function(childSnapshot) {
 	// Build a jquery object for the train row
 	var $trainRow = $('<tr>').attr('id', childSnapshot.key);
 	// Build a delete button to remove records from database
-	var $deleteBtn = $('<button>').append($('<span/>').addClass("glyphicon glyphicon-remove").attr('aria-hidden', "true"))
+	var $deleteBtn = $('<button>').append($('<span>').addClass("glyphicon glyphicon-remove").attr('aria-hidden', "true"))
 								.on('click', function() { trainDatabase.ref(childSnapshot.key).remove();});
 							
 	// Build an edit button to edit records (button there, still need to add functionality)
-	var $editBtn = $('<button>').append($('<span/>').addClass("glyphicon glyphicon-pencil").attr('aria-hidden', "true"))
-								.on('click', function() { /* Do stuff here */ });
+	var $editBtn = $('<button>').append($('<span>').addClass("glyphicon glyphicon-pencil").attr('aria-hidden', "true"))
+								.on('click', editButton );
 	// Append the two buttons to a <td> element and append to the row
 	var $update = $('<td>').append($deleteBtn).append($editBtn).appendTo($trainRow);
 
-	var $trainName = $('<td>').html(childSnapshot.val().trainName).appendTo($trainRow);
-	var $destination = $('<td>').html(childSnapshot.val().destination).appendTo($trainRow);
-	var $frequency = $('<td>').html(childSnapshot.val().frequency).appendTo($trainRow);
+	var $trainName = $('<td>').html(childSnapshot.val().trainName).addClass("editable").appendTo($trainRow);
+	var $destination = $('<td>').html(childSnapshot.val().destination).addClass("editable").appendTo($trainRow);
+	var $frequency = $('<td>').html(childSnapshot.val().frequency).addClass("editable").appendTo($trainRow);
 	var $nextArrival = $('<td>').html(moment(moment().add(minAway, "minutes")).format("hh:mm")).appendTo($trainRow);
 	var $minutesAway = $('<td>').html(minAway).appendTo($trainRow);
 	// Append trainRow to #trainRows element
@@ -71,10 +71,62 @@ trainDatabase.ref().on("child_removed", function(childSnapshot) {
 	$('#'+childSnapshot.key).remove();
 });
 
+
+function editButton() {	
+	console.log("editButton this:", this);
+	$(this).children('span').removeClass('glyphicon-pencil').addClass('glyphicon-ok');
+	$(this).on('click', saveButton);
+	editRow($(this).parents('tr').attr('id'));
+
+};
+
+function saveButton() {
+	console.log("save");
+	$(this).children('span').removeClass('glyphicon-ok').addClass('glyphicon-pencil');
+	$(this).on('click', editButton);
+	//saveRow($(this).parents('tr').attr('id'));	
+
+	$($(this).parents('tr').attr('id')).find('input').each( function(index, value) {
+		console.log("index:", index);
+	 	console.log("value:", value);
+	});
+};
+
+function saveRow(key) {
+	console.log("saveRow");
+	console.log("key:", key);
+	var rowID = '#' + key;
+	var trainRef = trainDatabase.ref().child(key);
+	// trainRef.update( {
+	// 	trainName: trainName,
+	// 	destination: destination,
+	// 	frequency: frequency
+	// });
+	// $(rowID).find('input').each( function(index, value) {
+	// 	console.log("index:", index);
+	// 	console.log("value:", value);
+	// });
+};
+
+function editRow(key) {
+	console.log("editRow key:", key);
+
+	console.log(key);
+	var rowID = '#' + key;
+	console.log(rowID);		
+
+	$(rowID).children('.editable').each( function(index, value) {
+		console.log("value:", value);
+		$(this).html($('<input>').attr("type", "text")
+								 .attr("value", $(this).text()));
+
+	});
+};
+
 /* ************************************************************	*/
 /* Function : parsley on field:validated						*/
 /* Parameters : none 											*/	
-/* Description : I included a javascript library called parsley	*/
+/* Description : I found a javascript library called parsley	*/
 /*				 for validation purposes. It uses attributes	*/
 /*				 included in the <input> elements to trigger 	*/
 /*				 the appropriate valication						*/
