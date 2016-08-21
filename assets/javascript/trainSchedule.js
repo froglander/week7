@@ -23,7 +23,7 @@ var trainDatabase = firebase.database();
 /*				 and display it on the page						*/
 /* ************************************************************	*/
 trainDatabase.ref().on("child_added", function(childSnapshot) {
-	console.log(childSnapshot.val());
+	//console.log(childSnapshot.val());
 
 	// Build up variables useful for calculation how many minutes away
 	// the next train is	
@@ -43,12 +43,15 @@ trainDatabase.ref().on("child_added", function(childSnapshot) {
 	// Build an edit button to edit records (button there, still need to add functionality)
 	var $editBtn = $('<button>').append($('<span>').addClass("glyphicon glyphicon-pencil").attr('aria-hidden', "true"))
 								.on('click', editButton );
+	// Build a save button to save an edited record that is not visible to start
+	var $saveBtn = $('<button>').append($('<span>').addClass("glyphicon glyphicon-ok").attr('aria-hidden', "true")).hide()
+								.on('click', saveButton );
 	// Append the two buttons to a <td> element and append to the row
-	var $update = $('<td>').append($deleteBtn).append($editBtn).appendTo($trainRow);
+	var $update = $('<td>').append($deleteBtn).append($editBtn).append($saveBtn).appendTo($trainRow);
 
-	var $trainName = $('<td>').html(childSnapshot.val().trainName).addClass("editable").appendTo($trainRow);
-	var $destination = $('<td>').html(childSnapshot.val().destination).addClass("editable").appendTo($trainRow);
-	var $frequency = $('<td>').html(childSnapshot.val().frequency).addClass("editable").appendTo($trainRow);
+	var $trainName = $('<td>').html(childSnapshot.val().trainName).addClass("editable trainName").appendTo($trainRow);
+	var $destination = $('<td>').html(childSnapshot.val().destination).addClass("editable destination").appendTo($trainRow);
+	var $frequency = $('<td>').html(childSnapshot.val().frequency).addClass("editable frequency").appendTo($trainRow);
 	var $nextArrival = $('<td>').html(moment(moment().add(minAway, "minutes")).format("hh:mm")).appendTo($trainRow);
 	var $minutesAway = $('<td>').html(minAway).appendTo($trainRow);
 	// Append trainRow to #trainRows element
@@ -71,57 +74,58 @@ trainDatabase.ref().on("child_removed", function(childSnapshot) {
 	$('#'+childSnapshot.key).remove();
 });
 
-
+/* ************************************************************	*/
+/* ************************************************************	*/
 function editButton() {	
-	console.log("editButton this:", this);
-	$(this).children('span').removeClass('glyphicon-pencil').addClass('glyphicon-ok');
-	$(this).on('click', saveButton);
-	editRow($(this).parents('tr').attr('id'));
-
+	console.log("edit button click");
+	// Hide the edit button
+	$(this).hide();	
+	// Show the save button
+	$(this).siblings().find(".glyphicon-ok").parent().show();
+	// Call editRow function with the id of the row
+	editRow($(this).parents('tr').attr('id'));	
 };
 
-function saveButton() {
-	console.log("save");
-	$(this).children('span').removeClass('glyphicon-ok').addClass('glyphicon-pencil');
-	$(this).on('click', editButton);
-	//saveRow($(this).parents('tr').attr('id'));	
-
-	$($(this).parents('tr').attr('id')).find('input').each( function(index, value) {
-		console.log("index:", index);
-	 	console.log("value:", value);
+function editRow(key) {
+	console.log("editRow function");
+	var rowID = '#' + key;
+	// Loop through each editable child and replace the text with an
+	// input field containing the text
+	$(rowID).children('.editable').each( function(index, value) {		
+		var temp = $(this).html();
+		console.log("temp:", temp);
+		$(this).html($('<input>').attr("type", "text")
+								 .attr("value", temp));
 	});
 };
 
-function saveRow(key) {
-	console.log("saveRow");
-	console.log("key:", key);
+function saveButton() {
+	console.log("save button click");
+	$(this).hide();	
+	// Show the save button
+	$(this).siblings().find(".glyphicon-pencil").parent().show();
+	// Call editRow function with the id of the row
+	saveRow($(this).parents('tr').attr('id'));	
+	
+};
+
+function saveRow(key) {		
 	var rowID = '#' + key;
-	var trainRef = trainDatabase.ref().child(key);
+	$(rowID).children('.editable').each( function(index, value) {
+		var temp = $(this).children('input').val();
+		$(this).html(temp);
+	});
+	console.log("trainName:", $(rowID).children("trainName"));
+	// var trainRef = trainDatabase.ref().child(key);
 	// trainRef.update( {
 	// 	trainName: trainName,
 	// 	destination: destination,
 	// 	frequency: frequency
 	// });
-	// $(rowID).find('input').each( function(index, value) {
-	// 	console.log("index:", index);
-	// 	console.log("value:", value);
-	// });
+	
 };
 
-function editRow(key) {
-	console.log("editRow key:", key);
 
-	console.log(key);
-	var rowID = '#' + key;
-	console.log(rowID);		
-
-	$(rowID).children('.editable').each( function(index, value) {
-		console.log("value:", value);
-		$(this).html($('<input>').attr("type", "text")
-								 .attr("value", $(this).text()));
-
-	});
-};
 
 /* ************************************************************	*/
 /* Function : parsley on field:validated						*/
