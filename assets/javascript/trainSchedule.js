@@ -115,13 +115,13 @@ function saveRow(key) {
 		var temp = $(this).children('input').val();
 		$(this).html(temp);
 	});
-	console.log("trainName:", $(rowID).children("trainName"));
-	// var trainRef = trainDatabase.ref().child(key);
-	// trainRef.update( {
-	// 	trainName: trainName,
-	// 	destination: destination,
-	// 	frequency: frequency
-	// });
+	console.log("trainName:", $(rowID).children(".trainName").text());
+	var trainRef = trainDatabase.ref().child(key);
+	trainRef.update( {
+		trainName: $(rowID).children(".trainName").text(),
+		destination: $(rowID).children(".destination").text(),
+		frequency: $(rowID).children(".frequency").text()
+	});
 	
 };
 
