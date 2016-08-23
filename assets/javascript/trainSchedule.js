@@ -75,6 +75,12 @@ trainDatabase.ref().on("child_removed", function(childSnapshot) {
 });
 
 /* ************************************************************	*/
+/* Function : editButton										*/
+/* Parameters : none											*/	
+/* Description : This function is called from the on-click of	*/
+/*				 the edit button (as a function object so we 	*/
+/*				 have 'this' as the button) and turns the 		*/
+/*				 with class .editable into input fields			*/ 
 /* ************************************************************	*/
 function editButton() {	
 	console.log("edit button click");
@@ -82,13 +88,8 @@ function editButton() {
 	$(this).hide();	
 	// Show the save button
 	$(this).siblings().find(".glyphicon-ok").parent().show();
-	// Call editRow function with the id of the row
-	editRow($(this).parents('tr').attr('id'));	
-};
-
-function editRow(key) {
-	console.log("editRow function");
-	var rowID = '#' + key;
+	// Variable to hold id of row
+	var rowID = '#' + $(this).parents('tr').attr('id');
 	// Loop through each editable child and replace the text with an
 	// input field containing the text
 	$(rowID).children('.editable').each( function(index, value) {		
@@ -99,24 +100,27 @@ function editRow(key) {
 	});
 };
 
+/* ************************************************************	*/
+/* Function : saveButton										*/
+/* Parameters : none											*/	
+/* Description : This function is called from the on-click of	*/
+/*				 the save button (as a function object so we 	*/
+/*				 have 'this' as the button) and updates the		*/
+/*				 database record with the indicated key			*/ 
+/* ************************************************************	*/
 function saveButton() {
-	console.log("save button click");
 	$(this).hide();	
 	// Show the save button
 	$(this).siblings().find(".glyphicon-pencil").parent().show();
-	// Call editRow function with the id of the row
-	saveRow($(this).parents('tr').attr('id'));	
-	
-};
-
-function saveRow(key) {		
-	var rowID = '#' + key;
+	// Variable to hold id of row
+	var rowID = '#' + $(this).parents('tr').attr('id');
+	// Loop through each editable field and turn it back into just text
 	$(rowID).children('.editable').each( function(index, value) {
 		var temp = $(this).children('input').val();
 		$(this).html(temp);
 	});
-	console.log("trainName:", $(rowID).children(".trainName").text());
-	var trainRef = trainDatabase.ref().child(key);
+	// Update record in database with the specified key
+	var trainRef = trainDatabase.ref().child($(this).parents('tr').attr('id'));
 	trainRef.update( {
 		trainName: $(rowID).children(".trainName").text(),
 		destination: $(rowID).children(".destination").text(),
@@ -124,8 +128,6 @@ function saveRow(key) {
 	});
 	
 };
-
-
 
 /* ************************************************************	*/
 /* Function : parsley on field:validated						*/
@@ -163,6 +165,7 @@ $('#addTrainForm').parsley().on('field:validated', function() {
 	$('#destinationInput').val("");
 	$('#firstTrainTimeInput').val("");
 	$('#frequencyInput').val("");
+	// Set focus back to Train Name input field
 	$('#trainNameInput').focus()
 
 	//So page doesn't refresh
